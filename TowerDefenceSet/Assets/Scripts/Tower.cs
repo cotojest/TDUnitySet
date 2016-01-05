@@ -7,6 +7,8 @@ namespace TDSet {
 		[HideInInspector]
 		public int typeID;
 
+		public string typeName;
+		public string description;
 		public Sprite icon;
 		public float buildTime;
 		public float range;

@@ -5,7 +5,7 @@ using TDSet;
 namespace TDSet {
 	public class StandardAttackTower : Tower {
 		public float damagePerHit;
-
+		public float cooldown;
 		// Use this for initialization
 
 		

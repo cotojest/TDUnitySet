@@ -6,6 +6,7 @@ using TDSet;
 namespace TDSet {
 	public class BuildController : MonoBehaviour {
 		public List<Tower> towerTypes;
+		public GameObject rangeIndicator;
 		private Tower towerPreview;
 
 		private TowerBuildingSpot selectedSpot;
@@ -21,6 +22,7 @@ namespace TDSet {
 				t.typeID = id;
 				id++;
 			}
+			HideRangeIndicator ();
 		}
 		
 		void Update () {
@@ -43,7 +45,6 @@ namespace TDSet {
 			Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit)) {
-				Debug.Log (hit.transform.gameObject);
 				selectedSpot = hit.transform.gameObject.GetComponent<TowerBuildingSpot> ();
 				DestroyTowerPreview ();
 				return selectedSpot;
@@ -59,11 +60,32 @@ namespace TDSet {
 			Debug.Log (towerPreview.gameObject);
 			towerPreview.gameObject.transform.position = selectedSpot.gameObject.transform.position;
 			towerPreview.gameObject.transform.localScale = selectedSpot.gameObject.transform.localScale;
+			ShowRangeIndicator (towerPreview);
+		}
+
+
+		public void BuildPreviewedTower() {
+			
 		}
 
 		private void DestroyTowerPreview() {
 			if (towerPreview != null) {
 				DestroyImmediate (towerPreview.gameObject);
+			}
+			HideRangeIndicator ();
+		}
+
+		private void ShowRangeIndicator(Tower tower) {
+			if (rangeIndicator != null) {
+				rangeIndicator.transform.position = tower.gameObject.transform.position;
+				rangeIndicator.transform.localScale = Vector3.one * tower.range;
+				rangeIndicator.SetActive (true);
+			}
+		}
+
+		private void HideRangeIndicator() {
+			if (rangeIndicator != null) {
+				rangeIndicator.SetActive (false);
 			}
 		}
 

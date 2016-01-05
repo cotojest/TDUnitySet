@@ -7,9 +7,10 @@ using UnityEngine.EventSystems;
 
 namespace TDSet {
 	public class PointAndClickUI : MonoBehaviour {
-		public GameObject towerButtonsParent;
-		public TowerBuildButton towerBuildButtonPrefab;
-
+		public ToggleGroup towerToggleGroup;
+		public TowerBuildToggle towerBuildButtonPrefab;
+		public Animator towerMenuAnimator;
+		public Animator spotMenuAnimator;
 		void Start () {
 			if (BuildController.instance == null) {
 				Debug.LogError ("BuildController is missing! Please add object with BuildController script to scene");
@@ -20,6 +21,7 @@ namespace TDSet {
 			if (Input.GetMouseButtonDown (0) && !EventSystem.current.IsPointerOverGameObject()) {
 				Tower tower = BuildController.instance.SelectTowerOnScreenPosition(Input.mousePosition)	;
 				if (tower != null) {
+					Debug.Log ("in");
 					HideSpotMenu ();
 					ShowTowerMenu (tower);
 				} else {
@@ -36,43 +38,56 @@ namespace TDSet {
 			}
 		}
 
-		public void TowerButtonClicked(int towerID) {
-			BuildController.instance.SetTowerPreview(towerID);
+		public void TowerToggleClicked(int id, bool value) {
+			Debug.Log (value);
+			if (value) {
+				BuildController.instance.SetTowerPreview (id);
+			}
 		}
 
 		private void ShowTowerMenu(Tower tower) {
-			Debug.Log ("Show Tower:" + tower);
+			if (towerMenuAnimator != null) {
+				towerMenuAnimator.SetTrigger ("Show");
+			}
 		}
 
 		private void ShowSpotMenu(TowerBuildingSpot spot) {
 			CreateTowerButtons (spot);
-			Debug.Log ("Show Spot:" + spot);
-
+			if (spotMenuAnimator != null) {
+				spotMenuAnimator.SetTrigger ("Show");
+			}
 		}
 
 		private void HideTowerMenu() {
-			Debug.Log ("Hide Tower");
+			if (towerMenuAnimator != null) {
+				towerMenuAnimator.SetTrigger ("Hide");
+			}
 		}
 
 		private void HideSpotMenu() {
-			Debug.Log ("Hide Spot");
+			if (spotMenuAnimator != null) {
+				spotMenuAnimator.SetTrigger ("Hide");
+			}
 		}
 
 		private void CreateTowerButtons(TowerBuildingSpot spot) {
 			List<GameObject> children = new List<GameObject>();
-			foreach (Transform child in towerButtonsParent.transform) children.Add(child.gameObject);
+			foreach (Transform child in towerToggleGroup.gameObject.transform) children.Add(child.gameObject);
 			children.ForEach(child => Destroy(child));
 			List<Tower> towerTypesForSpot = new List<Tower> (BuildController.instance.towerTypes);
 			foreach(int id in spot.restrictedTowersIDs) {
 				towerTypesForSpot.RemoveAt (id);
 			}
 			foreach (Tower t in towerTypesForSpot) {
-				TowerBuildButton button = (TowerBuildButton)GameObject.Instantiate (towerBuildButtonPrefab);
-				button.transform.SetParent (towerButtonsParent.transform);
-				button.Init (t.icon);
-				button.GetComponent<Button>().onClick.AddListener(() => TowerButtonClicked(t.typeID));
+				TowerBuildToggle toggle = (TowerBuildToggle)GameObject.Instantiate (towerBuildButtonPrefab);
+				toggle.transform.SetParent (towerToggleGroup.gameObject.transform);
+				toggle.Init (t.icon, t.typeID);
+				toggle.GetComponent<Toggle> ().group = towerToggleGroup;
+				toggle.GetComponent<Toggle>().onValueChanged.AddListener((value) => TowerToggleClicked(toggle.typeID, value));
 			}
 		}
+
+
 
 	}
 }
