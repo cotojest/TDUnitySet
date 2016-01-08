@@ -14,7 +14,7 @@ namespace TDSet {
 		public float range;
 
 		public float cost;
-
+		public Tower upgradedTower;
 
 		public delegate void BuildStart(Tower tower);
 		public static event BuildStart onBuildStart;
@@ -29,11 +29,11 @@ namespace TDSet {
 		
 		}
 
-		void Build() {
-			StartCoroutine (WaitForBuild());
+		public void Build() {
+			StartCoroutine (Building());
 		}
 
-		IEnumerator WaitForBuild() {
+		IEnumerator Building() {
 			if (onBuildStart != null) {
 				onBuildStart (this);
 			}

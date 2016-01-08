@@ -11,17 +11,25 @@ namespace TDSet {
 		public TowerBuildToggle towerBuildButtonPrefab;
 		public Animator towerMenuAnimator;
 		public Animator spotMenuAnimator;
+		public Button buildButton;
+		public Button sellButton;
+		public Button upgradeButton;
+
 		void Start () {
 			if (BuildController.instance == null) {
 				Debug.LogError ("BuildController is missing! Please add object with BuildController script to scene");
 			}
+			buildButton.onClick.AddListener (() => BuildController.instance.BuildPreviewedTower ());
+			buildButton.onClick.AddListener (() => HideSpotMenu ());
+			sellButton.onClick.AddListener (() => BuildController.instance.SellSelectedTower ());
+			sellButton.onClick.AddListener (() => HideTowerMenu ());
+
 		}
 		
 		void Update () {
 			if (Input.GetMouseButtonDown (0) && !EventSystem.current.IsPointerOverGameObject()) {
 				Tower tower = BuildController.instance.SelectTowerOnScreenPosition(Input.mousePosition)	;
 				if (tower != null) {
-					Debug.Log ("in");
 					HideSpotMenu ();
 					ShowTowerMenu (tower);
 				} else {
@@ -39,9 +47,9 @@ namespace TDSet {
 		}
 
 		public void TowerToggleClicked(int id, bool value) {
-			Debug.Log (value);
 			if (value) {
 				BuildController.instance.SetTowerPreview (id);
+				buildButton.interactable = true;
 			}
 		}
 
@@ -68,6 +76,7 @@ namespace TDSet {
 			if (spotMenuAnimator != null) {
 				spotMenuAnimator.SetTrigger ("Hide");
 			}
+			buildButton.interactable = false;
 		}
 
 		private void CreateTowerButtons(TowerBuildingSpot spot) {

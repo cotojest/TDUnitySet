@@ -10,6 +10,7 @@ namespace TDSet {
 		private Tower towerPreview;
 
 		private TowerBuildingSpot selectedSpot;
+		private Tower selectedTower;
 
 		public static BuildController instance { get; private set;}
 		void Awake() {
@@ -34,7 +35,10 @@ namespace TDSet {
 			RaycastHit hit;
 			if( Physics.Raycast(ray, out hit) )
 			{
-				Tower selectedTower = hit.transform.gameObject.GetComponent<Tower>();
+				selectedTower = hit.transform.gameObject.GetComponent<Tower>();
+				if (selectedTower != null) {
+					ShowRangeIndicator (selectedTower);
+				}
 				return selectedTower;
 			} else {
 				return null;
@@ -56,8 +60,6 @@ namespace TDSet {
 		public void SetTowerPreview(int towerID) {
 			DestroyTowerPreview ();
 			towerPreview = (Tower)GameObject.Instantiate (towerTypes [towerID]);
-			Debug.Log (selectedSpot.gameObject);
-			Debug.Log (towerPreview.gameObject);
 			towerPreview.gameObject.transform.position = selectedSpot.gameObject.transform.position;
 			towerPreview.gameObject.transform.localScale = selectedSpot.gameObject.transform.localScale;
 			ShowRangeIndicator (towerPreview);
@@ -65,7 +67,18 @@ namespace TDSet {
 
 
 		public void BuildPreviewedTower() {
-			
+			if (towerPreview != null) {
+				towerPreview.Build ();
+				towerPreview = null;
+				HideRangeIndicator ();
+			}
+		}
+
+		public void SellSelectedTower() {
+			if (selectedTower != null) {
+				DestroyImmediate (selectedTower.gameObject);
+			}
+			HideRangeIndicator ();
 		}
 
 		private void DestroyTowerPreview() {

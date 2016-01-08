@@ -6,5 +6,7 @@ using TDSet;
 namespace TDSet {
 	public class TowerBuildingSpot : MonoBehaviour {
 		public List<int> restrictedTowersIDs;
+		[HideInInspector]
+		public bool isFree = true;
 	}
 }
