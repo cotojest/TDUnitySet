@@ -68,14 +68,20 @@ namespace TDSet {
 
 		public void BuildPreviewedTower() {
 			if (towerPreview != null) {
-				towerPreview.Build ();
-				towerPreview = null;
-				HideRangeIndicator ();
+				if (LevelController.instance.SubtractResources(towerPreview.cost)) {
+					towerPreview.Build ();
+					towerPreview = null;
+					HideRangeIndicator ();
+				} else {
+					DestroyTowerPreview ();
+					Debug.Log ("not enough gold");
+				}
 			}
 		}
 
 		public void SellSelectedTower() {
 			if (selectedTower != null) {
+				LevelController.instance.AddResources (selectedTower.cost);
 				DestroyImmediate (selectedTower.gameObject);
 			}
 			HideRangeIndicator ();

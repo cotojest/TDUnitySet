@@ -14,6 +14,14 @@ namespace TDSet {
 		public Button buildButton;
 		public Button sellButton;
 		public Button upgradeButton;
+		public Button nextWaveButton;
+		public Text resourcesValueText;
+		public Text lifePointsValueText;
+
+		void Awake() {
+			LevelController.instance.onResourcesChange.AddListener (() => ShowResourcesValue(LevelController.instance.GetResources()));
+			LevelController.instance.onPlayerLifePointsChange.AddListener (() => ShowLifePointsValue(LevelController.instance.GetLifePoints()));
+		}
 
 		void Start () {
 			if (BuildController.instance == null) {
@@ -23,6 +31,9 @@ namespace TDSet {
 			buildButton.onClick.AddListener (() => HideSpotMenu ());
 			sellButton.onClick.AddListener (() => BuildController.instance.SellSelectedTower ());
 			sellButton.onClick.AddListener (() => HideTowerMenu ());
+			nextWaveButton.onClick.AddListener (() => EnemyWavesController.instance.RunNextWave ());
+			EnemyWavesController.instance.onSpawningEndedChange += ChangeNextWaveButtonInteractable;
+			Debug.Log (LevelController.instance);
 
 		}
 		
@@ -42,8 +53,8 @@ namespace TDSet {
 						HideSpotMenu ();
 					}
 				}
-
 			}
+
 		}
 
 		public void TowerToggleClicked(int id, bool value) {
@@ -96,7 +107,17 @@ namespace TDSet {
 			}
 		}
 
+		private void ShowResourcesValue(uint value) {
+			resourcesValueText.text = value.ToString ();
+		}
 
+		private void ShowLifePointsValue(int value) {
+			lifePointsValueText.text = value.ToString ();
+		}
 
+		private void ChangeNextWaveButtonInteractable(bool value) {
+			nextWaveButton.interactable = value;
+		}
+			
 	}
 }

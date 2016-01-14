@@ -13,7 +13,7 @@ namespace TDSet {
 		public float buildTime;
 		public float range;
 
-		public float cost;
+		public uint cost;
 		public Tower upgradedTower;
 
 		public delegate void BuildStart(Tower tower);
@@ -42,7 +42,11 @@ namespace TDSet {
 			if (onBuildEnd != null) {
 				onBuildEnd (this);
 			}
+			StartTowerBehaviourCouroutine();
 			Debug.Log ("build end");
+		}
+
+		protected virtual void StartTowerBehaviourCouroutine() {
 		}
 	}
 }

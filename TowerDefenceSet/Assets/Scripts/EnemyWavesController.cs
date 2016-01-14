@@ -5,36 +5,72 @@ using System.Collections.Generic;
 using System.Linq;
 namespace TDSet {
 	public class EnemyWavesController : MonoBehaviour {
+		public enum State {WaitingForStart, SpawningEnemies, WaitingForNextWave, Ended}
+		public State state {
+			get {
+				return _state;
+			} 
+			private set {
+				if (onSpawningEndedChange != null) {
+					onSpawningEndedChange (value != State.SpawningEnemies);
+				}
+				_state = value;
+			}
+		}
+		private State _state;
+
 		public List<EnemyWave> waves;
 
-		public bool spawningEnded;
+		public event Action<bool> onSpawningEndedChange;
 		private EnemyWave thisWave;
+		public static EnemyWavesController instance { get; private set;}
+		public float timer;
 
-		public void Start() {
-			RunNextWave ();
+		void Awake() {
+			instance = this;
+			state = State.WaitingForStart;
 		}
-
-		public void Update() {
-		}
-
-		public void RunNextWave() {
-			if (waves.Count > 0) {
-				thisWave = waves [0];
-				spawningEnded = false;
-				thisWave.Run (OnWaveSpawnEnd);
-				InvokeRepeating ("SpawnNextEnemy", thisWave.timeBetweenSpawns, thisWave.timeBetweenSpawns);
-				waves.RemoveAt (0);
+		void Update() {
+			if (state != State.WaitingForStart && state != State.Ended) {
+				timer += Time.deltaTime;
+				if (state == State.SpawningEnemies) {
+					if (timer >= thisWave.timeBetweenSpawns) {
+						SpawnNextEnemy ();
+					}
+				} else if (state == State.WaitingForNextWave) {
+					if (timer >= thisWave.timeToNextWave) {
+						RunNextWave ();
+					}
+				}
 			}
 		}
 
-		public void OnWaveSpawnEnd() {
-			Debug.Log ("in");
-			CancelInvoke ("SpawnNextEnemy");
-			spawningEnded = true;
-			Invoke ("RunNextWave", thisWave.timeToNextWave);
+		public int GetSecondsToNextWave() {
+			if (state == State.WaitingForNextWave) {
+				return (int)(thisWave.timeToNextWave - timer);
+			} else {
+				return -1;
+			}
+		}
+		public void RunNextWave() {
+			if (waves.Count > 0) {
+				thisWave = waves [0];
+				state = State.SpawningEnemies;
+				thisWave.Run (OnWaveSpawnEnd);
+				waves.RemoveAt (0);
+			} else {
+				state = State.Ended;
+			}
 		}
 
-		public void SpawnNextEnemy() {
+		private void OnWaveSpawnEnd() {
+			state = State.WaitingForNextWave;
+			timer = 0;
+
+		}
+
+		private void SpawnNextEnemy() {
+			timer = 0;
 			thisWave.SpawnEnemy ();
 		}
 
@@ -53,7 +89,6 @@ namespace TDSet {
 			onSpawnFinish = callback;
 			enemiesQueue = new List<int> ();
 			PrepareEnemiesInOrder ();
-			//InvokeRepeating ("SpawnEnemy", timeBetweenSpawns, timeBetweenSpawns);
 		}
 			
 		public void SpawnEnemy() {
@@ -65,11 +100,6 @@ namespace TDSet {
 				Enemy spawnedEnemy = (Enemy)GameObject.Instantiate(enemies[enemiesQueue[0]].enemyPrefab);
 				Path enemyPath = PathEditor.instance.GetPath (enemies [enemiesQueue [0]].pathId);
 				spawnedEnemy.Init(enemyPath);
-				String enemiesQueueString = "";
-				foreach (int i in enemiesQueue) {
-					enemiesQueueString += i.ToString() + ", ";
-				}
-				Debug.Log (enemiesQueueString);
 				enemiesQueue.RemoveAt(0);
 			}
 		}
@@ -119,4 +149,5 @@ namespace TDSet {
 	public enum SpawnOrder {
 		AsDefined, IterateOverSets, Random
 	}
+		
 }
