@@ -12,8 +12,8 @@ namespace TDSet {
 			} 
 			private set {
 				if (onSpawningEndedChange != null) {
-					onSpawningEndedChange (value != State.SpawningEnemies);
-				}
+					onSpawningEndedChange (value != State.SpawningEnemies && value != State.Ended);
+				}	
 				_state = value;
 			}
 		}
@@ -58,14 +58,16 @@ namespace TDSet {
 				state = State.SpawningEnemies;
 				thisWave.Run (OnWaveSpawnEnd);
 				waves.RemoveAt (0);
-			} else {
-				state = State.Ended;
-			}
+			} 
 		}
 
 		private void OnWaveSpawnEnd() {
-			state = State.WaitingForNextWave;
-			timer = 0;
+			if (waves.Count > 0) {
+				state = State.WaitingForNextWave;
+				timer = 0;
+			} else {
+				state = State.Ended;
+			}
 
 		}
 
