@@ -31,6 +31,8 @@ namespace TDSet {
 			buildButton.onClick.AddListener (() => HideSpotMenu ());
 			sellButton.onClick.AddListener (() => BuildController.instance.SellSelectedTower ());
 			sellButton.onClick.AddListener (() => HideTowerMenu ());
+			upgradeButton.onClick.AddListener (() => BuildController.instance.UpgradeSelectedTower ());
+			upgradeButton.onClick.AddListener (() => HideTowerMenu ());
 			nextWaveButton.onClick.AddListener (() => EnemyWavesController.instance.RunNextWave ());
 			EnemyWavesController.instance.onSpawningEndedChange += ChangeNextWaveButtonInteractable;
 			Debug.Log (LevelController.instance);

@@ -79,6 +79,22 @@ namespace TDSet {
 			}
 		}
 
+		public void UpgradeSelectedTower() {
+			if (selectedTower != null && selectedTower.upgradedTower != null ) {
+				if (LevelController.instance.SubtractResources(selectedTower.upgradedTower.cost)) {
+					Tower newTower = (Tower)GameObject.Instantiate (selectedTower.upgradedTower, 
+						selectedTower.transform.position, selectedTower.transform.rotation);
+					DestroyImmediate (selectedTower.gameObject);
+					HideRangeIndicator ();
+					selectedTower = newTower;
+					selectedTower.Build ();
+				} else {
+					HideRangeIndicator ();
+					Debug.Log ("not enough gold");
+				}
+			}
+		}
+
 		public void SellSelectedTower() {
 			if (selectedTower != null) {
 				LevelController.instance.AddResources (selectedTower.cost);
