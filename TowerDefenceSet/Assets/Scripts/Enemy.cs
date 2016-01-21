@@ -5,14 +5,17 @@ using System.Collections.Generic;
 namespace TDSet {
 	[RequireComponent (typeof(NavMeshAgent))]
 	public class Enemy : MonoBehaviour {
+		private enum State {Normal, Slowed}
 		public float hp;
 		public uint damageToPlayer = 1;
 		public uint minDroppedResources;
 		public uint maxDroppedResources;
+		private State state;
 		private Path path;
 		private NavMeshAgent agent;
 		private NavMeshPath navPath;
 		private int nextPointIndex;
+		private float normalSpeed;
 
 		void Update () {
 			if (ArrivedToPoint ()) {
@@ -26,9 +29,11 @@ namespace TDSet {
 			agent = GetComponent<NavMeshAgent> ();
 			navPath = new NavMeshPath ();
 			this.path = path;
+			normalSpeed = agent.speed;
 			transform.position = this.path.waypoints [0].position;
 			nextPointIndex = 1;
 			SetNextDestinationPoint ();
+			state = State.Normal;
 		}
 
 		public void AddDamage (float damage) {
@@ -37,6 +42,20 @@ namespace TDSet {
 				DropResources ();
 				Destroy (gameObject);
 			}
+		}
+
+		public void Slow (float time, float rate) {
+			if (state != State.Slowed) {
+				agent.speed = normalSpeed - normalSpeed * rate;
+				state = State.Slowed;
+				Invoke ("ReturnFromSlowedToNormal", time);
+
+			}
+		}
+
+		private void ReturnFromSlowedToNormal() {
+			state = State.Normal;
+			agent.speed = normalSpeed;
 		}
 
 		private void SetNextDestinationPoint() {
@@ -60,6 +79,7 @@ namespace TDSet {
 			int droppedResources = Random.Range ((int)minDroppedResources, (int)maxDroppedResources);
 			LevelController.instance.AddResources ((uint)droppedResources);
 		}
+			
 			
 	}
 }

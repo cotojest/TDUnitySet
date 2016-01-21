@@ -1,16 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+
 using TDSet;
 
 namespace TDSet {
 	public class BuildController : MonoBehaviour {
 		public List<Tower> towerTypes;
 		public GameObject rangeIndicator;
+		public GameObject buildingIndicator;
 		private Tower towerPreview;
 
 		private TowerBuildingSpot selectedSpot;
 		private Tower selectedTower;
+		public event Action<Tower> onSelectedTowerChange;
+		public event Action<Tower> onTowerPreviewChange;
 
 		public static BuildController instance { get; private set;}
 		void Awake() {
@@ -38,6 +43,9 @@ namespace TDSet {
 				selectedTower = hit.transform.gameObject.GetComponent<Tower>();
 				if (selectedTower != null) {
 					ShowRangeIndicator (selectedTower);
+					if (onSelectedTowerChange != null) {
+						onSelectedTowerChange (selectedTower);
+					}	
 				}
 				return selectedTower;
 			} else {
@@ -62,6 +70,9 @@ namespace TDSet {
 			towerPreview = (Tower)GameObject.Instantiate (towerTypes [towerID]);
 			towerPreview.gameObject.transform.position = selectedSpot.gameObject.transform.position;
 			towerPreview.gameObject.transform.localScale = selectedSpot.gameObject.transform.localScale;
+			if (onTowerPreviewChange != null) {
+				onTowerPreviewChange (towerPreview);
+			}
 			ShowRangeIndicator (towerPreview);
 		}
 
@@ -70,7 +81,9 @@ namespace TDSet {
 			if (towerPreview != null) {
 				if (LevelController.instance.SubtractResources(towerPreview.cost)) {
 					towerPreview.Build ();
+					AddBuildingIndicator (towerPreview);
 					towerPreview = null;
+					onTowerPreviewChange (towerPreview);
 					HideRangeIndicator ();
 				} else {
 					DestroyTowerPreview ();
@@ -82,12 +95,10 @@ namespace TDSet {
 		public void UpgradeSelectedTower() {
 			if (selectedTower != null && selectedTower.upgradedTower != null ) {
 				if (LevelController.instance.SubtractResources(selectedTower.upgradedTower.cost)) {
-					Tower newTower = (Tower)GameObject.Instantiate (selectedTower.upgradedTower, 
-						selectedTower.transform.position, selectedTower.transform.rotation);
-					DestroyImmediate (selectedTower.gameObject);
+					selectedTower = selectedTower.Upgrade ();
 					HideRangeIndicator ();
-					selectedTower = newTower;
-					selectedTower.Build ();
+					AddBuildingIndicator (selectedTower);
+
 				} else {
 					HideRangeIndicator ();
 					Debug.Log ("not enough gold");
@@ -97,7 +108,7 @@ namespace TDSet {
 
 		public void SellSelectedTower() {
 			if (selectedTower != null) {
-				LevelController.instance.AddResources (selectedTower.cost);
+				LevelController.instance.AddResources ((uint)selectedTower.GetSellValue());
 				DestroyImmediate (selectedTower.gameObject);
 			}
 			HideRangeIndicator ();
@@ -106,6 +117,7 @@ namespace TDSet {
 		private void DestroyTowerPreview() {
 			if (towerPreview != null) {
 				DestroyImmediate (towerPreview.gameObject);
+				onTowerPreviewChange (towerPreview);
 			}
 			HideRangeIndicator ();
 		}
@@ -121,6 +133,14 @@ namespace TDSet {
 		private void HideRangeIndicator() {
 			if (rangeIndicator != null) {
 				rangeIndicator.SetActive (false);
+			}
+		}
+
+		private void AddBuildingIndicator(Tower tower) {
+			if (buildingIndicator != null) {
+				tower.buildingIndicator = GameObject.Instantiate (buildingIndicator);
+				tower.buildingIndicator.transform.position = tower.transform.position;
+				tower.buildingIndicator.transform.parent = tower.transform;
 			}
 		}
 
