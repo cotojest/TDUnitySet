@@ -19,12 +19,14 @@ namespace TDSet {
 		}
 		private State _state;
 
+		public GameObject enemyHpIndicator;
 		public List<EnemyWave> waves;
 
 		public event Action<bool> onSpawningEndedChange;
-		private EnemyWave thisWave;
 		public static EnemyWavesController instance { get; private set;}
 		public float timer;
+		private EnemyWave thisWave;
+
 
 		void Awake() {
 			instance = this;
@@ -73,7 +75,12 @@ namespace TDSet {
 
 		private void SpawnNextEnemy() {
 			timer = 0;
-			thisWave.SpawnEnemy ();
+			Enemy newEnemy = thisWave.SpawnEnemy ();
+			if (enemyHpIndicator != null && newEnemy != null) {
+				GameObject newEnemyHpIndicator = GameObject.Instantiate (enemyHpIndicator);
+				newEnemyHpIndicator.transform.SetParent (newEnemy.transform);
+				newEnemyHpIndicator.transform.localPosition = Vector3.zero;
+			}
 		}
 
 	}
@@ -93,16 +100,18 @@ namespace TDSet {
 			PrepareEnemiesInOrder ();
 		}
 			
-		public void SpawnEnemy() {
+		public Enemy SpawnEnemy() {
 			if (enemiesQueue.Count <= 0) {
 				if (onSpawnFinish != null) {
 					onSpawnFinish ();
 				}
+				return null;
 			} else {
 				Enemy spawnedEnemy = (Enemy)GameObject.Instantiate(enemies[enemiesQueue[0]].enemyPrefab);
 				Path enemyPath = PathEditor.instance.GetPath (enemies [enemiesQueue [0]].pathId);
 				spawnedEnemy.Init(enemyPath);
 				enemiesQueue.RemoveAt(0);
+				return spawnedEnemy;
 			}
 		}
 

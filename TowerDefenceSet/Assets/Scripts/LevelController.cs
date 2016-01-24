@@ -2,6 +2,7 @@
 using System.Collections;
 using TDSet;
 using UnityEngine.Events;
+using System; 
 
 namespace TDSet {
 	public class LevelController : MonoBehaviour {
@@ -36,16 +37,15 @@ namespace TDSet {
 
 		public UnityEvent onResourcesChange;
 		public UnityEvent onPlayerLifePointsChange;
+		public event Action<bool> onLevelFinished;
+		private int enemyCount;
 
 		public static LevelController instance {
 			get {
 				if (_instance == null) {
 					_instance = FindObjectOfType<LevelController> ();
-					Debug.Log (_instance);
 				}
-
 				return _instance;
-
 			}
 		}
 		private static LevelController _instance;
@@ -87,6 +87,22 @@ namespace TDSet {
 			playerLifePoints -= damage;
 			if (playerLifePoints < 0) {
 				playerLifePoints = 0;
+				if (onLevelFinished != null) {
+					onLevelFinished (false);				
+				}
+			}
+		}
+
+		public void EnemyBorn() {
+			enemyCount++;
+		}
+
+		public void EnemyDied() {
+			enemyCount--;
+			if (enemyCount == 0 && EnemyWavesController.instance.state == EnemyWavesController.State.Ended) {
+				if (onLevelFinished != null) {
+					onLevelFinished (true);
+				}
 			}
 		}
 			

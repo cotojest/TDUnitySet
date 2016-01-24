@@ -7,6 +7,7 @@ namespace TDSet {
 	public class Enemy : MonoBehaviour {
 		private enum State {Normal, Slowed}
 		public float hp;
+		public float normalizedHp { get; private set;}
 		public uint damageToPlayer = 1;
 		public uint minDroppedResources;
 		public uint maxDroppedResources;
@@ -16,6 +17,12 @@ namespace TDSet {
 		private NavMeshPath navPath;
 		private int nextPointIndex;
 		private float normalSpeed;
+		private float maxHp;
+
+		void Start() {
+			maxHp = hp;
+			normalizedHp = 1;
+		}
 
 		void Update () {
 			if (ArrivedToPoint ()) {
@@ -25,7 +32,14 @@ namespace TDSet {
 		
 		}
 
+		void OnDestroy() {
+			if (LevelController.instance != null) {
+				LevelController.instance.EnemyDied ();
+			}
+		}
+
 		public void Init(Path path) {
+			LevelController.instance.EnemyBorn ();
 			agent = GetComponent<NavMeshAgent> ();
 			navPath = new NavMeshPath ();
 			this.path = path;
@@ -38,6 +52,7 @@ namespace TDSet {
 
 		public void AddDamage (float damage) {
 			hp -= damage;
+			normalizedHp = hp / maxHp;
 			if (hp <= 0) {
 				DropResources ();
 				Destroy (gameObject);

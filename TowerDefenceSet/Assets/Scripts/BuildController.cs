@@ -17,10 +17,15 @@ namespace TDSet {
 		public event Action<Tower> onSelectedTowerChange;
 		public event Action<Tower> onTowerPreviewChange;
 
-		public static BuildController instance { get; private set;}
-		void Awake() {
-			instance = this;
+		public static BuildController instance {
+			get {
+				if (_instance == null) {
+					_instance = FindObjectOfType<BuildController> ();
+				}
+				return _instance;
+			}
 		}
+		private static BuildController _instance;
 
 		void Start () {
 			int id = 0;
@@ -87,7 +92,9 @@ namespace TDSet {
 					HideRangeIndicator ();
 				} else {
 					DestroyTowerPreview ();
-					Debug.Log ("not enough gold");
+					if (MessageForUser.instance != null) {
+						MessageForUser.instance.Show ("NOT ENOUGH GOLD");
+					}
 				}
 			}
 		}
@@ -101,7 +108,9 @@ namespace TDSet {
 
 				} else {
 					HideRangeIndicator ();
-					Debug.Log ("not enough gold");
+					if (MessageForUser.instance != null) {
+						MessageForUser.instance.Show ("NOT ENOUGH GOLD");
+					}
 				}
 			}
 		}
